@@ -17,10 +17,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-import sqlalchemy as sa
-from sqlalchemy import orm
-import sqlalchemy.pool as pool
-from opencore.models import rdbms
+try:
+    import sqlalchemy as sa
+    from sqlalchemy import orm
+    import sqlalchemy.pool as pool
+    from opencore.models import rdbms
+except:
+    sa = None
+    orm = None
+    pool = None
+    rdbms = None
 
 def init_rdbms(engine):
     """Call me before using any RDBMSStore class in the model."""

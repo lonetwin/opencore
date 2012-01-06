@@ -80,6 +80,23 @@ def get_session(context, request):
     session = site.sessions.get(request.environ['repoze.browserid'])
     return session
 
+def get_snippet(text, words=20):
+    """ Returns the first `words` words of text.
+        
+            >>> text = 'a ' * 40
+            >>> snippet = get_snippet(text, words=2)
+            >>> snippet
+            'a a...'
+            >>> snippet = get_snippet('a a a', words=20)
+            >>> snippet
+            'a a a'
+    """
+    word_list = text.strip().split(' ')
+    if len(word_list) > words:
+        return ' '.join(word_list[:words]) + '...'
+    else:
+        return text
+
 _MAX_32BIT_INT = int((1<<31) - 1)
 
 def docid_to_hex(docid):
@@ -253,3 +270,8 @@ def fetch_url(url, data=None, timeout=None,  httpDebugLevel=0):
     except Exception, e:
         errorMessage = 'Exception:' + str(e) + ', for url=' + url
     raise ValueError('Exception during fetch_url, exception=%s' % errorMessage)    
+
+class NoOpOutputStream(object):
+    def write(self, bytes):
+        pass   
+    
