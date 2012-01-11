@@ -29,7 +29,7 @@ from repoze.bfg.security import Allow, Everyone
 # opencore
 from opencore.models.interfaces import ICommentsFolder
 from opencore.models.interfaces import IComment
-from opencore.models.interfaces import IHasFeed
+from opencore.models.interfaces import IHasFeed, IRatable
 
 class CommentsFolder(Folder):
     implements(ICommentsFolder)
@@ -52,7 +52,7 @@ class Comment(Folder):
     
     atom_name = 'a comment'
 
-    implements(IComment, IHasFeed)
+    implements(IComment, IHasFeed, IRatable)
     attachments = None
     modified_by = None
 

@@ -27,7 +27,7 @@ from repoze.bfg.interfaces import ISettings
 from repoze.bfg.settings import asbool
 from opencore.utils import find_site
 from opencore.utilities.interfaces import IMessenger
-from opencore.utilities.mbox import MailboxTool
+from opencore.utilities.mbox import Mailbox
 from opencore.utilities.message import MboxMessage
 import logging
 
@@ -55,8 +55,16 @@ class Messenger(object):
 
     def send(self, mfrom, profile, msg):
         root = find_site(profile)
-        mbt = MailboxTool()
-        mbt.send_message(root, mfrom, profile, msg)
+        queue = Mailbox.open_queue(root, profile.__name__)
+        if not isinstance(msg, MboxMessage):
+            try:
+                msg = MboxMessage(msg)
+            except Exception, e:
+                log.warning('Unable to convert to MboxMessage from  received '
+                            'type (%s)' % msg.__class__.__name__) 
+                raise e   
+        msg['from'] = mfrom
+        queue.add(msg)   
 
 class FakeMessenger:
     implements(IMessenger)

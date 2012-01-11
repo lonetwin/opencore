@@ -276,3 +276,17 @@ countries = Countries([
     ('ZM', 'Zambia'),
     ('ZW', 'Zimbabwe'),
 ])
+
+extensions = {
+    "image/jpeg": "jpg",
+    "image/gif": "gif",
+    "image/png": "png",
+}
+
+# Convert types sent by IE to standard types
+ie_types = {
+    "image/x-png": "image/png",
+    "image/pjpeg": "image/jpeg",
+}
+
+mimetypes = extensions.keys() + ie_types.keys()

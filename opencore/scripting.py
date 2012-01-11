@@ -24,6 +24,8 @@ import gc
 import os
 import sys
 import time
+import logging
+
 from paste.deploy import loadapp
 from ZODB.POSException import ConflictError
 from repoze.bfg.scripting import get_root
@@ -31,21 +33,39 @@ from opencore.log import get_logger
 
 _debug_object_refs = hasattr(sys, 'getobjects')
 
+LOCKDIR = '/var/run/karl/'
+
+#
+#   Replaceable shims for unit testing.
+#
+_TIME_TIME = None
+_TIME_SLEEP = None
+
+def _time_time():
+    if _TIME_TIME is not None:
+        return _TIME_TIME()
+    return time.time() #pragma NO COVERAGE
+
+def _time_sleep(interval):
+    if _TIME_SLEEP is not None:
+        return _TIME_SLEEP(interval)
+    return time.sleep(interval) #pragma NO COVERAGE
+
 def get_default_config():
     """Get the default configuration file name.
 
     This should be called by a console script. We assume that the
     console script lives in the 'bin' dir of a sandbox or buildout, and
-    that the openhcd.ini file lives in the 'etc' directory of the sandbox
+    that the opencore.ini file lives in the 'etc' directory of the sandbox
     or buildout.
     """
     me = sys.argv[0]
     me = os.path.abspath(me)
     sandbox = os.path.dirname(os.path.dirname(me))
-    config = os.path.join(sandbox, 'etc', 'openhcd.ini')
+    config = os.path.join(sandbox, 'etc', 'opencore.ini')
     return os.path.abspath(os.path.normpath(config))
 
-def open_root(config, name='openhcd'):
+def open_root(config, name='opencore'):
     """Open the database root object, given a Paste Deploy config file name.
 
     Returns (root, closer).  Call the closer function to close the database
@@ -57,13 +77,14 @@ def open_root(config, name='openhcd'):
 
 def run_daemon(name, func, interval=300,
                retry_period=30*60, retry_interval=60, retryable=None,
-               proceed=None):
-    logger = get_logger()
+               proceed=None, logger=None):
+    if logger is None: #pragma NO COVERAGE
+        logger = logging.getLogger(__name__)
 
     if retryable is None:
         retryable = (ConflictError,)
 
-    if proceed == None:
+    if proceed == None: #pragma NO COVERAGE
         def proceed():
             return True
 
